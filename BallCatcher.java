@@ -36,7 +36,9 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
@@ -53,16 +55,17 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Mecanum Test", group="Linear Opmode")  // @Autonomous(...) is the other common choice
+@TeleOp(name="Ball Catcher", group="Linear Opmode")  // @Autonomous(...) is the other common choice
 
 public class BallCatcher extends LinearOpMode {
 
     /* Declare OpMode members. */
     private ElapsedTime runtime = new ElapsedTime();
-    public DcMotor SpinningTube = null;
+    public CRServo SpinningTube = null;
 
     @Override
     public void runOpMode() throws InterruptedException {
+
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
@@ -70,11 +73,11 @@ public class BallCatcher extends LinearOpMode {
          * to 'get' must correspond to the names assigned during the robot configuration
          * step (using the FTC Robot Controller app on the phone).
          */
-        SpinningTube  = hardwareMap.dcMotor.get("SpinningTube");
+        SpinningTube = hardwareMap.crservo.get("SpinningTube");
 
         // eg: Set the drive motor directions:
         // "Reverse" the motor that runs backwards when connected directly to the battery
-        SpinningTube.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
+        SpinningTube.setDirection(CRServo.Direction.FORWARD);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -89,14 +92,12 @@ public class BallCatcher extends LinearOpMode {
             //leftMotor.setPower(-gamepad1.left_stick_y);
             //rightMotor.setPower(-gamepad1.right_stick_y);
 
-            double r = Math.hypot(gamepad1.left_stick_x, gamepad1.left_stick_y);
-            double robotAngle = Math.atan2(gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI / 4;
-            double rightX = gamepad1.right_stick_x;
-            final double v1 = r * Math.cos(robotAngle) - rightX;
+            boolean r = gamepad1.x;
 
-            SpinningTube.setPower(v1);
+            if(r==true) {
 
-
+                SpinningTube.setPower(0.5);
+            }
 
         }
     }

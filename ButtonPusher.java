@@ -36,7 +36,9 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
@@ -53,17 +55,18 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Ball Shooter", group="Linear Opmode")  // @Autonomous(...) is the other common choice
+@TeleOp(name="Button Pusher", group="Linear Opmode")  // @Autonomous(...) is the other common choice
 
-public class BallShoooter extends LinearOpMode {
+public class ButtonPusher extends LinearOpMode {
 
     /* Declare OpMode members. */
     private ElapsedTime runtime = new ElapsedTime();
-    public DcMotor TopWheel = null;
-    public DcMotor BottomWheel = null;
+    public Servo BPLeft = null;
+    public Servo BPRight = null;
 
     @Override
     public void runOpMode() throws InterruptedException {
+
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
@@ -71,13 +74,13 @@ public class BallShoooter extends LinearOpMode {
          * to 'get' must correspond to the names assigned during the robot configuration
          * step (using the FTC Robot Controller app on the phone).
          */
-        TopWheel  = hardwareMap.dcMotor.get("TopWheel");
-        BottomWheel  = hardwareMap.dcMotor.get("BottomWheel");
+        BPLeft = hardwareMap.servo.get("BPLeft");
+        BPRight = hardwareMap.servo.get("BPRight");
 
         // eg: Set the drive motor directions:
         // "Reverse" the motor that runs backwards when connected directly to the battery
-        TopWheel.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
-        BottomWheel.setDirection(DcMotor.Direction.REVERSE);// Set to FORWARD if using AndyMark motors
+        BPLeft.setDirection(Servo.Direction.FORWARD);
+        BPRight.setDirection(Servo.Direction.REVERSE);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -92,15 +95,27 @@ public class BallShoooter extends LinearOpMode {
             //leftMotor.setPower(-gamepad1.left_stick_y);
             //rightMotor.setPower(-gamepad1.right_stick_y);
 
-            double r = gamepad1.right_trigger;
-            final double v1 = r;
-            final double v2 = r;
+            float LeftT;
+            float RightT;
 
-            TopWheel.setPower(v1);
-            BottomWheel.setPower(v2);
+            if(gamepad1.left_trigger > 0.20){
+                LeftT = 0.20f;
+            } else if(gamepad1.left_trigger < 0.80){
+                LeftT = 0.80f;
+            } else {
+                LeftT = gamepad1.left_trigger;
+            }
 
-            telemetry.addData("", "Run Time: " + gamepad1.right_trigger);
-            telemetry.update();
+            if(gamepad1.right_trigger > 0.80){
+                RightT = 0.80f;
+            } else if(gamepad1.right_trigger < 0.20){
+                RightT = 0.20f;
+            } else {
+                RightT = gamepad1.right_trigger;
+            }
+
+            BPLeft.setPosition(LeftT);
+            BPRight.setPosition(RightT);
 
         }
     }

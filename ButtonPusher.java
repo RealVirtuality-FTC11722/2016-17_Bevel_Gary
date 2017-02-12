@@ -63,6 +63,10 @@ public class ButtonPusher extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     public Servo BPLeft = null;
     public Servo BPRight = null;
+    public final static double LEFT_HOME = 0.65;
+    public final static double RIGHT_HOME = 0.4;
+    public final static double LED_HOME = 0.59;
+    public Servo LED = null;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -76,11 +80,17 @@ public class ButtonPusher extends LinearOpMode {
          */
         BPLeft = hardwareMap.servo.get("BPLeft");
         BPRight = hardwareMap.servo.get("BPRight");
+        LED = hardwareMap.servo.get("LEDs");
 
         // eg: Set the drive motor directions:
         // "Reverse" the motor that runs backwards when connected directly to the battery
         BPLeft.setDirection(Servo.Direction.FORWARD);
-        BPRight.setDirection(Servo.Direction.REVERSE);
+        BPRight.setDirection(Servo.Direction.FORWARD);
+        LED.setDirection(Servo.Direction.FORWARD);
+
+        BPLeft.setPosition(LEFT_HOME);
+        BPRight.setPosition(RIGHT_HOME);
+        LED.setPosition(LED_HOME);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -98,21 +108,35 @@ public class ButtonPusher extends LinearOpMode {
             float LeftT;
             float RightT;
 
-            if(gamepad1.left_trigger > 0.20){
-                LeftT = 0.20f;
-            } else if(gamepad1.left_trigger < 0.80){
-                LeftT = 0.80f;
+            if(gamepad1.x){
+                LED.setPosition(0.5);
+            }
+
+            if(gamepad1.b){
+                LED.setPosition(0.67);
+            }
+
+            if(gamepad1.a){
+                LED.setPosition(LED_HOME);
+            }
+
+            if(gamepad1.left_trigger < 0.65){
+                LeftT = 0.65f;
+            } else if(gamepad1.left_trigger > 0.96){
+                LeftT = 0.96f;
             } else {
                 LeftT = gamepad1.left_trigger;
             }
 
-            if(gamepad1.right_trigger > 0.80){
-                RightT = 0.80f;
-            } else if(gamepad1.right_trigger < 0.20){
-                RightT = 0.20f;
+            if(gamepad1.right_trigger < 0.4){
+                RightT = 0.4f;
+            } else if(gamepad1.right_trigger > 0.10){
+                RightT = 0.10f;
             } else {
                 RightT = gamepad1.right_trigger;
             }
+
+
 
             BPLeft.setPosition(LeftT);
             BPRight.setPosition(RightT);

@@ -26,9 +26,17 @@ public class BevelGary extends LinearOpMode {
     public DcMotor motorBR = null;
     public Servo BPLeft = null;
     public Servo BPRight = null;
-    /*public DcMotor TopWheel = null;
-    public DcMotor BottomWheel = null;*/
+    public DcMotor LeftWheel = null;
+    public DcMotor RightWheel = null;
     public CRServo SpinningTube = null;
+    public CRServo Conveyor = null;
+    public final static double LEFT_HOME = 0.65;
+    public final static double RIGHT_HOME = 0.4;
+    public final static double LED_HOME = 0.59;
+    public Servo LED = null;
+
+    private boolean spinningForward = false;
+    private boolean spinningBackward = false;
     
     /*public final static double PushButtonLeft_MIN_RANGE  = 0.32;
     public final static double PushButtonLeft_MAX_RANGE  = 0.63;
@@ -50,22 +58,30 @@ public class BevelGary extends LinearOpMode {
         motorBR  = hardwareMap.dcMotor.get("motor_br");
         BPLeft = hardwareMap.servo.get("BPLeft");
         BPRight = hardwareMap.servo.get("BPRight");
-        /*TopWheel  = hardwareMap.dcMotor.get("TopWheel");
-        BottomWheel  = hardwareMap.dcMotor.get("BottomWheel");*/
+        LeftWheel  = hardwareMap.dcMotor.get("LeftWheel");
+        RightWheel  = hardwareMap.dcMotor.get("RightWheel");
         SpinningTube = hardwareMap.crservo.get("ballcollector");
+        Conveyor = hardwareMap.crservo.get("Conveyor");
+        LED = hardwareMap.servo.get("LEDs");
 
 
         // eg: Set the drive motor directions:
         // "Reverse" the motor that runs backwards when connected directly to the battery
-        motorFL.setDirection(DcMotor.Direction.REVERSE); // Set to REVERSE if using AndyMark motors
-        motorFR.setDirection(DcMotor.Direction.FORWARD);// Set to FORWARD if using AndyMark motors
+        motorFL.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
+        motorFR.setDirection(DcMotor.Direction.REVERSE);// Set to FORWARD if using AndyMark motors
         motorBL.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
         motorBR.setDirection(DcMotor.Direction.REVERSE);// Set to FORWARD if using AndyMark motors
         BPLeft.setDirection(Servo.Direction.FORWARD);
         BPRight.setDirection(Servo.Direction.FORWARD);
-        /*TopWheel.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
-        BottomWheel.setDirection(DcMotor.Direction.REVERSE);// Set to FORWARD if using AndyMark motors*/
+        LeftWheel.setDirection(DcMotor.Direction.REVERSE); // Set to REVERSE if using AndyMark motors
+        RightWheel.setDirection(DcMotor.Direction.FORWARD);// Set to FORWARD if using AndyMark motors*/
         SpinningTube.setDirection(CRServo.Direction.FORWARD);
+        Conveyor.setDirection(CRServo.Direction.REVERSE);
+        LED.setDirection(Servo.Direction.FORWARD);
+
+        BPLeft.setPosition(LEFT_HOME);
+        BPRight.setPosition(RIGHT_HOME);
+        LED.setPosition(LED_HOME);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -80,6 +96,7 @@ public class BevelGary extends LinearOpMode {
             //rightMotor.setPower(-gamepad1.right_stick_y);
 
             double r = Math.hypot(gamepad1.left_stick_x, gamepad1.left_stick_y);
+            //double robotAngle = Math.atan2(gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI / 4;
             double robotAngle = Math.atan2(gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI / 4;
             double rightX = gamepad1.right_stick_x;
             final double v1 = r * Math.cos(robotAngle) - rightX;
@@ -87,62 +104,62 @@ public class BevelGary extends LinearOpMode {
             final double v3 = r * Math.sin(robotAngle) - rightX;
             final double v4 = r * Math.cos(robotAngle) + rightX;
 
-            /*double BSr = gamepad1.right_trigger;
-            final double BSv1 = BSr;
-            final double BSv2 = BSr;*/
-
-            motorFL.setPower(v1);
+            motorFL.setPower(v3);
             motorFR.setPower(v2);
-            motorBL.setPower(v3);
+            motorBL.setPower(v1);
             motorBR.setPower(v4);
+
+            if(gamepad1.x){
+                LED.setPosition(0.5);
+            }
+
+            if(gamepad1.b){
+                LED.setPosition(0.67);
+            }
+
+            if(gamepad1.a){
+                LED.setPosition(LED_HOME);
+            }
 
             float LeftT;
             float RightT;
 
-            if(gamepad1.left_trigger > 0.80){
-                LeftT = 0.80f;
-            } else if(gamepad1.left_trigger < 0.20){
-                LeftT = 0.20f;
+            if(gamepad1.left_trigger < 0.65){
+                LeftT = 0.65f;
+            } else if(gamepad1.left_trigger > 0.96){
+                LeftT = 0.96f;
             } else {
                 LeftT = gamepad1.left_trigger;
             }
 
-            if(gamepad1.left_trigger > 0.20){
-                RightT = 0.20f;
-            } else if(gamepad1.left_trigger < 0.80){
-                RightT = 0.80f;
+            if(gamepad1.right_trigger < 0.4){
+                RightT = 0.4f;
+            } else if(gamepad1.right_trigger > 0.10){
+                RightT = 0.10f;
             } else {
-                RightT = gamepad1.left_trigger;
+                RightT = gamepad1.right_trigger;
             }
 
             BPLeft.setPosition(LeftT);
             BPRight.setPosition(RightT);
 
-            /*PushButtonLeft_POS = PushButtonLeft_MAX_RANGE - PushButtonLeft_Range * gamepad1.left_trigger;
-            BPLeft.setPosition(PushButtonLeft_POS);*/
+            LeftWheel.setPower(gamepad2.right_trigger);
+            RightWheel.setPower(gamepad2.right_trigger);
 
-            /*TopWheel.setPower(BSv1);
-            BottomWheel.setPower(BSv2);*/
+            Conveyor.setPower(gamepad2.left_trigger);
 
-            if(gamepad1.left_bumper) {
-
+            if(gamepad2.left_bumper) {
                 SpinningTube.setPower(1);
-            }
-
-            if(gamepad1.right_bumper) {
-
+            } else if (gamepad2.right_bumper) {
                 SpinningTube.setPower(-1);
-            }
-
-            if(!gamepad1.right_bumper && !gamepad1.left_bumper)
-            {
+            } else {
                 SpinningTube.setPower(0);
             }
 
             telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("", "Right Trigger Pos: " + gamepad1.right_trigger);
-            telemetry.addData("", "Left Trigger Pos: " + gamepad1.left_trigger);
             telemetry.update();
+
+            idle();
         }
     }
 }

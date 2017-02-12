@@ -18,6 +18,7 @@ import com.vuforia.Vuforia;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
+import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -26,6 +27,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import org.firstinspires.ftc.robotcore.internal.opengl.models.Teapot;
 
 import java.util.IllegalFormatCodePointException;
 import java.util.Vector;
@@ -65,8 +67,8 @@ public class AutonomousBevelGary extends LinearOpMode {
     public Servo BPRight = null;
     public final static double LEFT_HOME = 0.65;
     public final static double RIGHT_HOME = 0.4;
-    public final static double LED_HOME = 0.59;
-    public Servo LED = null;
+    //public final static double LED_HOME = 0.59;
+    //public Servo LED = null;
     public CRServo SpinningTube = null;
 
 
@@ -75,7 +77,8 @@ public class AutonomousBevelGary extends LinearOpMode {
     public Boolean Left = true;
     public Boolean Right = false;
 
-    public Class sensor1 = Sensor1.class;
+    Sensor1 sensor1 = new Sensor1();
+    Sensor2 sensor2 = new Sensor2();
 
     TouchSensor alliance;  // Hardware Device Object
     TouchSensor position;  // Hardware Device Object
@@ -105,7 +108,7 @@ public class AutonomousBevelGary extends LinearOpMode {
             BPLeft = hardwareMap.servo.get("BPLeft");
             BPRight = hardwareMap.servo.get("BPRight");
             SpinningTube = hardwareMap.crservo.get("ballcollector");
-            LED = hardwareMap.servo.get("LEDs");
+            //LED = hardwareMap.servo.get("LEDs");
             alliance = hardwareMap.touchSensor.get("alliance color");
             position = hardwareMap.touchSensor.get("team position");
 
@@ -115,7 +118,7 @@ public class AutonomousBevelGary extends LinearOpMode {
             motorBR.setDirection(DcMotor.Direction.FORWARD);// Set to FORWARD if using AndyMark motors
             BPLeft.setDirection(Servo.Direction.FORWARD);
             BPRight.setDirection(Servo.Direction.FORWARD);
-            LED.setDirection(Servo.Direction.FORWARD);
+            //LED.setDirection(Servo.Direction.FORWARD);
             SpinningTube.setDirection(CRServo.Direction.FORWARD);
 
             int counter = 0;
@@ -128,7 +131,7 @@ public class AutonomousBevelGary extends LinearOpMode {
 
             BPLeft.setPosition(LEFT_HOME);
             BPRight.setPosition(RIGHT_HOME);
-            LED.setPosition(LED_HOME);
+            //LED.setPosition(LED_HOME);
 
             waitForStart();
 
@@ -173,7 +176,11 @@ public class AutonomousBevelGary extends LinearOpMode {
             for (VuforiaTrackable beac : beacons) {
                 OpenGLMatrix latestLocation = ((VuforiaTrackableDefaultListener) beac.getListener()).getUpdatedRobotLocation();
                 if (latestLocation != null) {
+                    VectorF translation = latestLocation.getTranslation();
                     lastKnownLocation = latestLocation;
+                    telemetry.addData(beac.getName() + "-Translation", translation);
+                    double degreesToTurn = Math.toDegrees(Math.atan2(translation.get(0), translation.get(2)));
+                    telemetry.addData(beac.getName() + "-Degrees", degreesToTurn);
                 }
             }
 
@@ -219,7 +226,7 @@ public class AutonomousBevelGary extends LinearOpMode {
 
         public void RedTeamLeft(){
             // Turn the lights red
-            LED.setPosition(0.67);
+            //LED.setPosition(0.67);
 
             // We need to go forward 1,492 millimeters
             ForBackDrive(1000,0.6);
@@ -227,37 +234,88 @@ public class AutonomousBevelGary extends LinearOpMode {
             // We need to turn 90 degrees
             Turn(700,0.6);
 
-            // We need to go forward 1200 millimeters with vuforia or 1790 millimeters without
+            // We need to go forward 1200 millimeters with vuforia or 1790+ millimeters without so we're up against the beacon
             ForBackDrive(1000,0.6);
 
-            // Press the correct coloured button
-
-            if (Sensor1.redPercentage() > 0.4) {
+            // Press the correct coloured button by invoking/running a method in another class (another code) that gives us an int value
+            if (sensor1.redPercentage() > 0.4) {
                 BPLeft.setPosition(0.96);
                 sleep(3000);
                 BPLeft.setPosition(0.65);
-            } else if (Sensor2.redPercentage() > 0.4) {
+            } else if (sensor2.redPercentage() > 0.4) {
                 BPRight.setPosition(0.10);
                 sleep(3000);
                 BPRight.setPosition(0.4);
-            } else if (Sensor1.bluePercentage() > 0.4 && Sensor2.bluePercentage() > 0.4) {
+            } else if (sensor1.bluePercentage() > 0.4 && sensor2.bluePercentage() > 0.4) {
                 BPLeft.setPosition(0.96);
                 sleep(3000);
                 BPLeft.setPosition(0.65);
             }
 
-
             // Make an ameezing light show
-            LightShow("red");
+            //LightShow("red");
+
+            // Back away from the beacon
+            ForBackDrive(1000,-0.6);
+
+            // Turn 90 degrees in the OTHER direction
+            Turn(700,-0.6);
+
+            // Drive forward for 1192 millimeters
+            ForBackDrive(1000,0.6);
+
+            // Turn back 90 degrees
+            Turn(700,0.6);
+
+            // Drive up slightly past the distance you drove back a few commands ago
+            ForBackDrive(1000,0.6);
+
+            // Press the correct coloured button by invoking/running a method in another class (another code) that gives us an int value
+            if (sensor1.redPercentage() > 0.4) {
+                BPLeft.setPosition(0.96);
+                sleep(3000);
+                BPLeft.setPosition(0.65);
+            } else if (sensor2.redPercentage() > 0.4) {
+                BPRight.setPosition(0.10);
+                sleep(3000);
+                BPRight.setPosition(0.4);
+            } else if (sensor1.bluePercentage() > 0.4 && sensor2.bluePercentage() > 0.4) {
+                BPLeft.setPosition(0.96);
+                sleep(3000);
+                BPLeft.setPosition(0.65);
+            }
+
+            // Back away from the beacon
+            ForBackDrive(1000,-0.6);
+
+            // Turn 90 degrees in the OTHER direction
+            Turn(700,-0.6);
+
+            // Drive forward for 894 millimeters
+            ForBackDrive(1000,0.6);
+
+            // Turn 90 degrees in the OTHER direction so that we're facing the ball
+            Turn(700,-0.6);
+
+            // Drive forward and bump off the ball (this distance is dependent on how much we backed up)
+            ForBackDrive(1000,0.6);
+
+            // Back up to be level with the corner vortex
+            ForBackDrive(1000,-0.6);
+
+            // Turn 90 degrees in the OTHER direction so your facing the corner vortex
+            Turn(700,-0.6);
+
+            // Drive forward 1750 millimeters or so, so that we're partially parked on the corner vortex
+            ForBackDrive(1000,0.6);
 
             telemetry.update();
-
             idle();
         }
 
         public void RedTeamRight() {
             // Turn the lights red
-            LED.setPosition(0.67);
+            //LED.setPosition(0.67);
 
             // We need to go forward 1,492 millimeters
             ForBackDrive(1000,0.6);
@@ -265,37 +323,88 @@ public class AutonomousBevelGary extends LinearOpMode {
             // We need to turn 90 degrees
             Turn(700,0.6);
 
-            // We need to go forward 1200 millimeters with vuforia or 1790 millimeters without
+            // We need to go forward 1200 millimeters with vuforia or 1790+ millimeters without so we're up against the beacon
             ForBackDrive(1000,0.6);
 
-            // Press the correct coloured button
-            /*
-            if (Sensor1.redPercentage > 0.4) {
+            // Press the correct coloured button by invoking/running a method in another class (another code) that gives us an int value
+            if (sensor1.redPercentage() > 0.4) {
                 BPLeft.setPosition(0.96);
                 sleep(3000);
                 BPLeft.setPosition(0.65);
-            } else if (Sensor2.redPercentage > 0.4) {
+            } else if (sensor2.redPercentage() > 0.4) {
                 BPRight.setPosition(0.10);
                 sleep(3000);
                 BPRight.setPosition(0.4);
-            } else if (Sensor1.bluePercentage > 0.4 && Sensor2.bluePercentage > 0.4) {
+            } else if (sensor1.bluePercentage() > 0.4 && sensor2.bluePercentage() > 0.4) {
                 BPLeft.setPosition(0.96);
                 sleep(3000);
                 BPLeft.setPosition(0.65);
             }
-             */
 
             // Make an ameezing light show
-            LightShow("red");
+            //LightShow("red");
+
+            // Back away from the beacon
+            ForBackDrive(1000,-0.6);
+
+            // Turn 90 degrees in the OTHER direction
+            Turn(700,-0.6);
+
+            // Drive forward for 1192 millimeters
+            ForBackDrive(1000,0.6);
+
+            // Turn back 90 degrees
+            Turn(700,0.6);
+
+            // Drive up slightly past the distance you drove back a few commands ago
+            ForBackDrive(1000,0.6);
+
+            // Press the correct coloured button by invoking/running a method in another class (another code) that gives us an int value
+            if (sensor1.redPercentage() > 0.4) {
+                BPLeft.setPosition(0.96);
+                sleep(3000);
+                BPLeft.setPosition(0.65);
+            } else if (sensor2.redPercentage() > 0.4) {
+                BPRight.setPosition(0.10);
+                sleep(3000);
+                BPRight.setPosition(0.4);
+            } else if (sensor1.bluePercentage() > 0.4 && sensor2.bluePercentage() > 0.4) {
+                BPLeft.setPosition(0.96);
+                sleep(3000);
+                BPLeft.setPosition(0.65);
+            }
+
+            // Back away from the beacon
+            ForBackDrive(1000,-0.6);
+
+            // Turn 90 degrees in the OTHER direction
+            Turn(700,-0.6);
+
+            // Drive forward for 894 millimeters
+            ForBackDrive(1000,0.6);
+
+            // Turn 90 degrees in the OTHER direction so that we're facing the ball
+            Turn(700,-0.6);
+
+            // Drive forward and bump off the ball (this distance is dependent on how much we backed up)
+            ForBackDrive(1000,0.6);
+
+            // Back up to be level with the corner vortex
+            ForBackDrive(1000,-0.6);
+
+            // Turn 90 degrees in the OTHER direction so your facing the corner vortex
+            Turn(700,-0.6);
+
+            // Drive forward 1750 millimeters or so, so that we're partially parked on the corner vortex
+            ForBackDrive(1000,0.6);
 
             telemetry.update();
-
             idle();
         }
 
         public void BlueTeamLeft() {
             // Turn the lights blue
-            LED.setPosition(0.5);
+            //LED.setPosition(0.5);
 
             // We need to go forward 1,492 millimeters
             ForBackDrive(1000,0.6);
@@ -303,49 +412,171 @@ public class AutonomousBevelGary extends LinearOpMode {
             // We need to turn 90 degrees
             Turn(700,0.6);
 
-            // We need to go forward 1200 millimeters with vuforia or 1790 millimeters without
+            // We need to go forward 1200 millimeters with vuforia or 1790+ millimeters without so we're up against the beacon
             ForBackDrive(1000,0.6);
 
-            // Press the correct coloured button
-            /*
-            if (Sensor1.bluePercentage > 0.4) {
+            // Press the correct coloured button by invoking/running a method in another class (another code) that gives us an int value
+            if (sensor1.bluePercentage() > 0.4) {
                 BPLeft.setPosition(0.96);
                 sleep(3000);
                 BPLeft.setPosition(0.65);
-            } else if (Sensor2.bluePercentage > 0.4) {
+            } else if (sensor2.bluePercentage() > 0.4) {
                 BPRight.setPosition(0.10);
                 sleep(3000);
                 BPRight.setPosition(0.4);
-            } else if (Sensor1.redPercentage > 0.4 && Sensor2.redPercentage > 0.4) {
+            } else if (sensor1.redPercentage() > 0.4 && sensor2.redPercentage() > 0.4) {
                 BPLeft.setPosition(0.96);
                 sleep(3000);
                 BPLeft.setPosition(0.65);
             }
-             */
 
             // Make an ameezing light show
-            LightShow("blue");
+            //LightShow("blue");
+
+            // Back away from the beacon
+            ForBackDrive(1000,-0.6);
+
+            // Turn 90 degrees in the OTHER direction
+            Turn(700,-0.6);
+
+            // Drive forward for 1192 millimeters
+            ForBackDrive(1000,0.6);
+
+            // Turn back 90 degrees
+            Turn(700,0.6);
+
+            // Drive up slightly past the distance you drove back a few commands ago
+            ForBackDrive(1000,0.6);
+
+            // Press the correct coloured button by invoking/running a method in another class (another code) that gives us an int value
+            if (sensor1.bluePercentage() > 0.4) {
+                BPLeft.setPosition(0.96);
+                sleep(3000);
+                BPLeft.setPosition(0.65);
+            } else if (sensor2.bluePercentage() > 0.4) {
+                BPRight.setPosition(0.10);
+                sleep(3000);
+                BPRight.setPosition(0.4);
+            } else if (sensor1.redPercentage() > 0.4 && sensor2.redPercentage() > 0.4) {
+                BPLeft.setPosition(0.96);
+                sleep(3000);
+                BPLeft.setPosition(0.65);
+            }
+
+            // Back away from the beacon
+            ForBackDrive(1000,-0.6);
+
+            // Turn 90 degrees in the OTHER direction
+            Turn(700,-0.6);
+
+            // Drive forward for 894 millimeters
+            ForBackDrive(1000,0.6);
+
+            // Turn 90 degrees in the OTHER direction so that we're facing the ball
+            Turn(700,-0.6);
+
+            // Drive forward and bump off the ball (this distance is dependent on how much we backed up)
+            ForBackDrive(1000,0.6);
+
+            // Back up to be level with the corner vortex
+            ForBackDrive(1000,-0.6);
+
+            // Turn 90 degrees in the OTHER direction so your facing the corner vortex
+            Turn(700,-0.6);
+
+            // Drive forward 1750 millimeters or so, so that we're partially parked on the corner vortex
+            ForBackDrive(1000,0.6);
 
             telemetry.update();
-
             idle();
         }
 
         public void BlueTeamRight() {
             // Turn the lights blue
-            LED.setPosition(0.5);
+            //LED.setPosition(0.5);
 
-            // We start by going forward for 1 second
+            // We need to go forward 1,492 millimeters
             ForBackDrive(1000,0.6);
 
-            // We change direction to turn
+            // We need to turn 90 degrees
             Turn(700,0.6);
 
+            // We need to go forward 1200 millimeters with vuforia or 1790+ millimeters without so we're up against the beacon
+            ForBackDrive(1000,0.6);
+
+            // Press the correct coloured button by invoking/running a method in another class (another code) that gives us an int value
+            if (sensor1.bluePercentage() > 0.4) {
+                BPLeft.setPosition(0.96);
+                sleep(3000);
+                BPLeft.setPosition(0.65);
+            } else if (sensor2.bluePercentage() > 0.4) {
+                BPRight.setPosition(0.10);
+                sleep(3000);
+                BPRight.setPosition(0.4);
+            } else if (sensor1.redPercentage() > 0.4 && sensor2.redPercentage() > 0.4) {
+                BPLeft.setPosition(0.96);
+                sleep(3000);
+                BPLeft.setPosition(0.65);
+            }
+
             // Make an ameezing light show
-            LightShow("blue");
+            //LightShow("blue");
+
+            // Back away from the beacon
+            ForBackDrive(1000,-0.6);
+
+            // Turn 90 degrees in the OTHER direction
+            Turn(700,-0.6);
+
+            // Drive forward for 1192 millimeters
+            ForBackDrive(1000,0.6);
+
+            // Turn back 90 degrees
+            Turn(700,0.6);
+
+            // Drive up slightly past the distance you drove back a few commands ago
+            ForBackDrive(1000,0.6);
+
+            // Press the correct coloured button by invoking/running a method in another class (another code) that gives us an int value
+            if (sensor1.bluePercentage() > 0.4) {
+                BPLeft.setPosition(0.96);
+                sleep(3000);
+                BPLeft.setPosition(0.65);
+            } else if (sensor2.bluePercentage() > 0.4) {
+                BPRight.setPosition(0.10);
+                sleep(3000);
+                BPRight.setPosition(0.4);
+            } else if (sensor1.redPercentage() > 0.4 && sensor2.redPercentage() > 0.4) {
+                BPLeft.setPosition(0.96);
+                sleep(3000);
+                BPLeft.setPosition(0.65);
+            }
+
+            // Back away from the beacon
+            ForBackDrive(1000,-0.6);
+
+            // Turn 90 degrees in the OTHER direction
+            Turn(700,-0.6);
+
+            // Drive forward for 894 millimeters
+            ForBackDrive(1000,0.6);
+
+            // Turn 90 degrees in the OTHER direction so that we're facing the ball
+            Turn(700,-0.6);
+
+            // Drive forward and bump off the ball (this distance is dependent on how much we backed up)
+            ForBackDrive(1000,0.6);
+
+            // Back up to be level with the corner vortex
+            ForBackDrive(1000,-0.6);
+
+            // Turn 90 degrees in the OTHER direction so your facing the corner vortex
+            Turn(700,-0.6);
+
+            // Drive forward 1750 millimeters or so, so that we're partially parked on the corner vortex
+            ForBackDrive(1000,0.6);
 
             telemetry.update();
-
             idle();
         }
 
@@ -382,36 +613,36 @@ public class AutonomousBevelGary extends LinearOpMode {
             sleep(1000);
         }
 
-        public void LightShow (String team) {
-            if (team == "red"){
-                LED.setPosition(LED_HOME);
-                sleep(50);
-                LED.setPosition(0.67);
-                sleep(50);
-                LED.setPosition(LED_HOME);
-                sleep(50);
-                LED.setPosition(0.67);
-                sleep(50);
-                LED.setPosition(LED_HOME);
-                sleep(50);
-                LED.setPosition(0.67);
-                sleep(50);
-            }
-            if (team == "blue") {
-                LED.setPosition(LED_HOME);
-                sleep(50);
-                LED.setPosition(0.5);
-                sleep(50);
-                LED.setPosition(LED_HOME);
-                sleep(50);
-                LED.setPosition(0.5);
-                sleep(50);
-                LED.setPosition(LED_HOME);
-                sleep(50);
-                LED.setPosition(0.5);
-                sleep(50);
-            }
-        }
+//        public void LightShow (String team) {
+//            if (team == "red"){
+//                LED.setPosition(LED_HOME);
+//                sleep(50);
+//                LED.setPosition(0.67);
+//                sleep(50);
+//                LED.setPosition(LED_HOME);
+//                sleep(50);
+//                LED.setPosition(0.67);
+//                sleep(50);
+//                LED.setPosition(LED_HOME);
+//                sleep(50);
+//                LED.setPosition(0.67);
+//                sleep(50);
+//            }
+//            if (team == "blue") {
+//                LED.setPosition(LED_HOME);
+//                sleep(50);
+//                LED.setPosition(0.5);
+//                sleep(50);
+//                LED.setPosition(LED_HOME);
+//                sleep(50);
+//                LED.setPosition(0.5);
+//                sleep(50);
+//                LED.setPosition(LED_HOME);
+//                sleep(50);
+//                LED.setPosition(0.5);
+//                sleep(50);
+//            }
+//        }
 
         private void setupVuforia() {
             // Setup parameters to create localizer
@@ -419,6 +650,7 @@ public class AutonomousBevelGary extends LinearOpMode {
             parameters.vuforiaLicenseKey = VUFORIA_KEY;
             parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
             parameters.useExtendedTracking = false;
+            parameters.cameraMonitorFeedback = VuforiaLocalizer.Parameters.CameraMonitorFeedback.TEAPOT;
             vuforiaLocalizer = ClassFactory.createVuforiaLocalizer(parameters);
             // These are the vision targets that we want to use
             // The string needs to be the name of the appropriate .xml file in the assets folder

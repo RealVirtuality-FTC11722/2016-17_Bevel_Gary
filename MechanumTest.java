@@ -82,15 +82,15 @@ public class MechanumTest extends LinearOpMode {
         // eg: Set the drive motor directions:
         // "Reverse" the motor that runs backwards when connected directly to the battery
         motorFL.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
-        motorFR.setDirection(DcMotor.Direction.REVERSE);// Set to FORWARD if using AndyMark motors
+        motorFR.setDirection(DcMotor.Direction.REVERSE); // Set to FORWARD if using AndyMark motors
         motorBL.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
-        motorBR.setDirection(DcMotor.Direction.REVERSE);// Set to FORWARD if using AndyMark motors
+        motorBR.setDirection(DcMotor.Direction.REVERSE); // Set to FORWARD if using AndyMark motors
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
 
-        // run until the end of the match (driver presses STOP)
+        // run until the end of the match (driver presses REVEROP)
         while (opModeIsActive()) {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.update();

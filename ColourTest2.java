@@ -18,11 +18,11 @@ public class ColourTest2 extends LinearOpMode {
         waitForStart();
 
         while(opModeIsActive()){
-            int i = mux.getCRGB(0)[1];
+            int i1 = mux.getCRGB(0)[1];
             int i2 = mux.getCRGB(0)[2];
             int i3 = mux.getCRGB(0)[3];
             int i4 = mux.getCRGB(0)[0];
-            telemetry.addData("Colour red(R): ", i);
+            telemetry.addData("Colour red(R): ", i1);
             telemetry.addData("Colour green(G): ", i2);
             telemetry.addData("Colour blue(B): ", i3);
             telemetry.addData("Colour unknown(C): ", i4);

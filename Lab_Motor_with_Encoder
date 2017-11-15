@@ -39,7 +39,7 @@ public class Lab_Motor_with_Encoder extends LinearOpMode {
         motorLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motorLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         StartPosition = motorLift.getCurrentPosition();
-        MaxPosition = StartPosition +1840;
+        MaxPosition = StartPosition +1680;
         telemetry.addData("Initial Position", StartPosition);
         telemetry.update();
 

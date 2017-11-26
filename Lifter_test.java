@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.Servo;
 
 
 /**
@@ -24,12 +25,17 @@ public class Lifter_test extends LinearOpMode {
     /* Declare OpMode members. */
     private ElapsedTime runtime = new ElapsedTime();
     public DcMotor motorLift = null;
+    public Servo GrabberR = null;
+    public Servo GrabberL = null;
+
     long PositionStart;
     long PositionMax;
     long Position1;
     long Position2;
     long Position3;
     long PositionEnd;
+    int GrabberLAngle = 180;
+    int GrabberRAngle = 180;
 
 
     @Override
@@ -42,6 +48,8 @@ public class Lifter_test extends LinearOpMode {
          * step (using the FTC Robot Controller app on the phone).
          */
         motorLift  = hardwareMap.dcMotor.get("motor_lift");
+        GrabberL = hardwareMap.servo.get("GrabberL");
+        GrabberR = hardwareMap.servo.get("GrabberR");
         motorLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motorLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         PositionStart = motorLift.getCurrentPosition();
@@ -62,11 +70,19 @@ public class Lifter_test extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
+        //GrabberL.setPosition(0/GrabberLAngle);
+        //GrabberR.setPosition(180/GrabberRAngle);
+
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Position",  motorLift.getCurrentPosition());
             telemetry.update();
+
+            if (gamepad2.right_trigger != 0 ) {
+                GrabberL.setPosition(gamepad2.right_trigger * 0.2 + 0.8);
+                GrabberR.setPosition(1 - (gamepad2.right_trigger * 0.2 + 0.8));
+            }
 
             if (gamepad2.a = true) {
                 PositionEnd = Position1;
